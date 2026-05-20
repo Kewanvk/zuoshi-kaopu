@@ -1,192 +1,260 @@
 ---
 name: zuoshi-kaopu
 description: >
-  Use this skill when the user needs to research, analyze, or verify information
-  from documents, reports, recordings, or web sources. Triggers include: "research
-  this", "verify these claims", "analyze this report", "fact-check", "extract data
-  from these files", "cross-verify", "write a research report", or any task where
-  conclusions must be traceable to source evidence. Produces a Claim Ledger where
-  every conclusion has a source, verification status, and confidence level.
-version: 1.0.0
+  Trigger on: "做事靠谱", "靠谱研究", "reliable research", "research with
+  verification", "zuoshi-kaopu" for the full guided workflow. Also trigger on
+  single-step keywords: "脑暴" or "brainstorm" for adversarial challenge against
+  a second model; "质证" or "verify against sources" for NotebookLM evidence
+  verification. Produces a Claim Ledger where every conclusion has a source,
+  verification status, and confidence level.
+version: 1.1.0
 ---
 
 # zuoshi-kaopu (做事靠谱)
 
-一套让 AI 研究产出可信的方法论。组合 LLM 的泛化能力和 NotebookLM 的质证准确度，
-通过 Claim Ledger（论断账本）让每条结论可追溯。
+**Language rule: match the user's language. Follow the user's lead.**
 
-**核心原则：** LLM 是假设引擎（聪明但会幻觉）。NotebookLM 是证据引擎（准确但只看
-原文）。这个 skill 让它们配合，产出你能信任的结论。
+## Routing: first run vs. returning user vs. single-step
 
-**Language rule: match the user's language. If they write in Chinese, respond in
-Chinese. If they write in English, respond in English. Follow the user's lead.**
+**On first trigger ever (no `00-config.md` in the current project):**
+Run the First Run Experience (Section A).
 
-## Step 0: Environment Setup (MANDATORY)
+**On subsequent triggers with "做事靠谱" / "靠谱研究" / "reliable research":**
+Run the Full Workflow (Section C).
 
-**CRITICAL: You MUST complete Step 0 before doing ANY research work. Do not skip
-this step. Do not proceed to Step 1 until the user has confirmed their setup.**
+**On keyword trigger "脑暴" / "brainstorm":**
+Run Single-Step: Adversarial Challenge (Section D1).
 
-The power of this skill comes from cross-model verification. A single model
-talking to itself cannot catch its own blind spots. Step 0 configures the
-tools that make "doing things right" actually work.
+**On keyword trigger "质证" / "verify against sources":**
+Run Single-Step: Evidence Verification (Section D2).
 
-Ask the user these questions in sequence:
+---
 
-### Question 1: NotebookLM (evidence engine, required)
+## Section A: First Run Experience
 
-NotebookLM is the evidence engine. It verifies claims against source text.
-Without it, this skill cannot deliver on its core promise.
+This runs once per project, when the user first triggers the skill.
+Two things happen in parallel: introduce the product, and detect the environment.
 
-Ask: **"Do you have NotebookLM MCP installed? (It is free with a Google account.
-Install guide: `pipx install notebooklm-mcp-cli && nlm login && nlm setup add <your-platform>`)"**
+### A1: Introduction (show to user)
 
-- If yes: verify by checking if `notebook_list` or equivalent NLM tools are available
-- If no: walk them through installation. Read `references/setup/claude-code.md`
-  or `references/setup/codex.md` for platform-specific steps
-- **Do not proceed until NLM is confirmed working.**
+Present the following to the user (in their language):
 
-### Question 2: Second model for adversarial challenge (recommended)
+> **做事靠谱** is a research methodology that combines the broad thinking of
+> LLMs with the grounded accuracy of NotebookLM.
+>
+> The core idea: LLMs are smart but hallucinate. NotebookLM only speaks from
+> source text. This skill makes them work together so your conclusions are
+> traceable and trustworthy.
+>
+> **Two ways to use it:**
+>
+> 1. **Full workflow** ("做事靠谱"): I guide you step by step from research
+>    question to verified deliverable. Every conclusion gets a Claim Ledger
+>    entry with source, status, and confidence.
+>
+> 2. **Single-step** (use anytime during your work):
+>    - Say **"脑暴"** when you want a second model to challenge your thinking.
+>      I will send your ideas to another AI for adversarial review.
+>    - Say **"质证"** when you want to verify a claim against source materials.
+>      I will query NotebookLM for evidence and tell you what the sources
+>      actually say.
+>
+> You do not need to have everything prepared upfront. Start with a rough idea
+> and we build from there.
 
-A second, independent model challenges your hypotheses from a different angle.
-This is what separates "reliable research" from "one model talking to itself."
+### A2: Environment Detection (run in background while showing A1)
 
-NotebookLM verifies facts against source text, but it does not challenge your
-reasoning. A second model does. Without it, the adversarial challenge step
-falls back to a weaker self-critique mode.
+While presenting the introduction, detect available tools:
 
-Ask: **"Do you have access to any other AI model? This can be:"**
+1. **Check NotebookLM MCP**: are NLM tools (notebook_list, notebook_query,
+   source_add) available?
+2. **Check for second model**: are there other model MCP servers or API
+   configurations available?
 
-- **A different major model**: Claude, Gemini, Kimi, DeepSeek, Qwen, GLM, Llama
-- **An API aggregator / proxy** (common in China): SiliconFlow, OneAPI, OpenRouter,
-  or any service where one API key lets you call multiple models
-- **A local model**: Ollama, LM Studio, or similar
-- **Another AI CLI tool**: Claude Code, Codex, Gemini CLI
+### A3: Environment Setup (after introduction)
 
-If the user has any of these, help them configure it:
+Present detection results and guide the user through what is missing.
 
-**Option A: API aggregator / proxy (one key, multiple models)**
-This is the easiest path for users who already have a subscription.
-The user provides their API base URL and key. The agent calls a different
-model through that API for the adversarial challenge step.
-Example: user has SiliconFlow -> can call Kimi, DeepSeek, Qwen through it.
+**NotebookLM (required):**
 
-**Option B: Direct model API**
-User has a specific model's API key (Anthropic, Google, Moonshot, etc.).
-Configure as MCP server or direct HTTP call for the challenge step.
+If not detected, guide installation:
 
-**Option C: Another AI CLI tool**
-If on Codex and has Claude Code (or vice versa), use `/codex consult` or
-equivalent cross-tool invocation.
+> NotebookLM is the evidence engine. It is free with a Google account.
+>
+> ```
+> pipx install notebooklm-mcp-cli
+> nlm login
+> nlm setup add <your-platform>
+> ```
+>
+> (Read `references/setup/claude-code.md` or `references/setup/codex.md`
+> for detailed steps.)
 
-**Option D: Local model**
-User runs Ollama or similar. Can be called via local HTTP API.
+Do not proceed until NLM is confirmed working.
 
-**Option E: No second model available**
-Fall back to sub-agent with contrarian prompt. Explicitly tell the user:
-"Without a second model, the adversarial challenge will be weaker. I will
-do a self-critique pass instead, but this is less effective than true
-cross-model checking."
+**Second model (recommended):**
 
-### Record the configuration
+Ask the user how they access AI models:
 
-In Audit mode, record the configuration in the project's `00-config.md`:
-what models are available, how they are accessed, and what role each plays.
-Standard and Lightweight modes skip this file but still complete the setup.
+> To challenge your thinking from a different angle, a second model helps.
+> How do you normally access AI?
+>
+> - **API aggregator** (SiliconFlow, OneAPI, OpenRouter): give me the base
+>   URL and key, I can call Kimi, DeepSeek, Qwen, etc. through it
+> - **Direct API key** (Anthropic, Google, Moonshot, etc.): I can call it
+>   directly
+> - **Another CLI tool** (Claude Code, Codex, Gemini CLI): I can cross-call
+> - **Local model** (Ollama, LM Studio): I can call via local API
+> - **None of the above**: I will do a self-critique pass instead (weaker
+>   but still useful)
 
-## Five-Step Workflow
+### A4: Save configuration
 
-Read `references/methodology.md` for full details. The file names below are for
-Audit mode. Standard and Lightweight modes use fewer, consolidated files (see
-Three Modes below). Summary:
+Write `00-config.md` in the current project directory with:
+- Platform detected
+- NLM status and notebook access
+- Second model: what it is, how to call it, or "sub-agent fallback"
+- Date configured
 
-### Step 1: Research Brief + Source Loading
+Tell the user: **"Setup complete. You can start using the skill now, or open
+a new session when you are ready to do research."**
 
-Define the research question, scope, risk level, and deliverable type. Then load
-all source materials into NotebookLM.
+---
 
-Output: `01-brief-and-sources.md`
+## Section B: Returning User Check
 
-### Step 2: Hypothesis Generation
+When the skill triggers and `00-config.md` already exists, read it and verify
+the configuration is still valid (NLM accessible, second model reachable).
+If anything changed, update `00-config.md`. Then proceed to Section C or D
+based on the trigger keyword.
 
-The LLM reads source materials and forms hypotheses, analysis frameworks, or
-question lists. Begin building the Claim Ledger with status = unverified.
+---
 
-Output: `02-hypotheses.md` (includes initial Claim Ledger)
+## Section C: Full Workflow (guided, step by step)
 
-### Step 3: Adversarial Challenge (rule-triggered)
+Triggered by "做事靠谱", "靠谱研究", "reliable research", or similar.
 
-**Triggers automatically when any of these apply:**
-- Research involves recommendations, rankings, or comparisons
-- Research involves factual judgments about people or companies
-- Research involves money, legal, or reputation decisions
-- Source materials contain contradictory information
+**Do not ask the user to provide everything at once.** Guide them one question
+at a time:
 
-When none apply, skip to Step 4.
+### C1: Research Brief
 
-Send hypotheses to the second LLM (or sub-agent). Accept problems it identifies;
-reject replacement solutions by default (regenerate from context instead).
+Ask in sequence (wait for each answer before asking the next):
+
+1. **"What do you want to research or figure out?"**
+   Accept vague answers. Help the user sharpen the question if needed.
+
+2. **"What materials do you have? (files, URLs, recordings, or nothing yet)"**
+   If the user has materials, load them into NotebookLM.
+   If not, help them think about where to find relevant sources.
+
+3. **"What should the final output look like?"**
+   Report? Decision memo? Verified fact list? Presentation notes?
+
+4. **Determine mode** based on impact and source complexity:
+
+   |  | Low-impact | High-impact |
+   |---|---|---|
+   | Simple sources | Lightweight | Standard |
+   | Complex / conflicting | Standard | Audit |
+
+   High-impact = money, legal, personnel, reputation, external publication,
+   factual claims about people or companies.
+
+Output: `01-brief-and-sources.md` (Audit) or inline (Lightweight/Standard)
+
+### C2: Hypothesis Generation
+
+Read source materials and form hypotheses. Start the Claim Ledger with all
+claims marked `unverified`. Be explicit: these are hypotheses, not conclusions.
+
+If the user is unsure what to ask: do an orientation scan first (list key
+entities, topics, contradictions from the sources), then generate hypotheses.
+
+Output: `02-hypotheses.md` with initial Claim Ledger
+
+### C3: Adversarial Challenge (rule-triggered)
+
+**Auto-triggers when any apply:**
+- Recommendations, rankings, or comparisons
+- Factual judgments about people or companies
+- Money, legal, or reputation decisions
+- Contradictory source materials
+
+When none apply, skip to C4.
+
+Send hypotheses to the second model (from `00-config.md`) or sub-agent.
+Accept problems identified; reject replacement solutions (regenerate from
+context instead).
 
 Output: `03-challenge.md`
 
-### Step 4: Evidence Verification
+### C4: Evidence Verification
 
-Query NotebookLM with specific, verifiable questions derived from each hypothesis.
-Update the Claim Ledger with evidence.
+Query NotebookLM with specific questions for each claim. Update the Claim
+Ledger. For each claim record: conclusion, source quote, source, confidence
+(`direct` / `indirect` / `no_data` / `source_conflict`).
 
-For each claim, record four fields:
-- **Conclusion**: what the evidence shows
-- **Source quote**: exact passage from NLM
-- **Source**: document name, page, or URL
-- **Confidence**: `direct` / `indirect` / `no_data` / `source_conflict`
+Extraction and verification are separate passes. NLM's synthesis is not
+evidence; only quoted source text counts.
 
-Extraction and verification must be separate passes. NLM's own synthesis is not
-evidence; only the source text it quotes is.
+Output: `04-evidence.md` with updated Claim Ledger
 
-Output: `04-evidence.md` (updated Claim Ledger)
+### C5: Final Judgment + Delivery
 
-### Step 5: Final Judgment + Delivery
+If key claims are contradicted, loop back to C2.
 
-Review the Claim Ledger. If verification contradicts key hypotheses, loop back
-to Step 2 (revision trigger).
+Otherwise produce deliverable with Claim Ledger as appendix. Run the quality
+checklist before delivering:
 
-Otherwise, produce the deliverable with the Claim Ledger as appendix.
+1. Every key conclusion has a source quote from NLM?
+2. Any data from training knowledge instead of sources? (mark or remove)
+3. Verification targeted the most error-prone claims?
+4. Uncertain items marked with confidence level?
 
 Output: `05-judgment.md` + `06-deliverable.*`
 
-## Three Modes
+---
 
-| Mode | Trigger | Output files |
-|------|---------|-------------|
-| Lightweight | Low-impact conclusions + simple sources | `final.md` with inline citations |
-| Standard | Default | `01-brief.md` + `02-claims.md` + `03-final.md` |
-| Audit | High-impact conclusions OR complex/conflicting sources | Full file chain (00-06) + Claim Ledger |
+## Section D: Single-Step Modes
 
-**Trigger matrix:**
+These can be triggered anytime during any conversation. They do not require
+the full workflow. They use the environment from `00-config.md` if available;
+if not, check NLM/model availability on the spot.
 
-|  | Low-impact conclusions | High-impact conclusions |
-|---|---|---|
-| Simple sources | Lightweight | Standard |
-| Complex / conflicting sources | Standard | Audit |
+### D1: Adversarial Challenge ("脑暴")
 
-**High-impact** = involves money, legal, personnel, reputation decisions; will be
-published externally; involves factual claims about people or companies.
+Triggered by the user saying "脑暴", "brainstorm", "challenge this", or similar.
 
-## Quality Checklist (run before delivery)
+1. Ask: **"What idea or hypothesis do you want challenged?"**
+2. Send to the second model (or sub-agent) with an adversarial prompt:
+   find blind spots, unstated assumptions, alternative interpretations,
+   logical gaps
+3. Return results with clear labels: what was challenged, what holds up,
+   what needs rethinking
+4. Do NOT replace the user's ideas. Only surface problems. The user decides
+   what to change.
 
-Four checks. If any fails, fix before delivering.
+### D2: Evidence Verification ("质证")
 
-1. **Does every key conclusion have a source quote from NLM?**
-2. **Did any data come from training knowledge instead of sources?** (If so, mark
-   it explicitly or remove it)
-3. **Did verification target the most error-prone claims, or just the easy ones?**
-4. **Are uncertain items marked with their confidence level?**
+Triggered by the user saying "质证", "verify", "check against sources", or
+similar.
+
+1. Ask: **"What claim do you want verified, and against which sources?"**
+2. If sources are not yet in NLM, help load them
+3. Query NLM with specific, verifiable questions
+4. Return results with: source quote, source location, confidence level
+5. If NLM finds no evidence, say so explicitly. Do not fill gaps with
+   training knowledge.
+
+---
 
 ## Reference Files
 
-- `references/methodology.md` : Full five-step workflow with file specs
-- `references/evidence-rules.md` : Evidence discipline rules
-- `references/error-patterns.md` : 8 common error patterns with examples
-- `references/source-grading.md` : Source grading system (A/B/C/D/X)
-- `references/claim-ledger-template.md` : Claim Ledger format and field definitions
-- `references/setup/claude-code.md` : Setup guide for Claude Code users
-- `references/setup/codex.md` : Setup guide for Codex users
+- `references/methodology.md` : Full five-step workflow details
+- `references/evidence-rules.md` : Evidence handling rules
+- `references/error-patterns.md` : 8 common error patterns
+- `references/source-grading.md` : Source reliability grading (A/B/C/D/X)
+- `references/claim-ledger-template.md` : Claim Ledger format spec
+- `references/setup/claude-code.md` : Setup guide for Claude Code
+- `references/setup/codex.md` : Setup guide for Codex
