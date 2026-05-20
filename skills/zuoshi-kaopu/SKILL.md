@@ -10,38 +10,39 @@ description: >
 version: 1.0.0
 ---
 
-# zuoshi-kaopu
+# zuoshi-kaopu (做事靠谱)
 
-A research methodology that combines the broad knowledge of LLMs with the
-grounded accuracy of NotebookLM. Every conclusion is traceable to source evidence
-through a Claim Ledger.
+一套让 AI 研究产出可信的方法论。组合 LLM 的泛化能力和 NotebookLM 的质证准确度，
+通过 Claim Ledger（论断账本）让每条结论可追溯。
 
-**Core principle:** LLMs are hypothesis engines (smart but hallucination-prone).
-NotebookLM is an evidence engine (accurate but narrow). This skill makes them
-work together so you get intelligence you can trust.
+**核心原则：** LLM 是假设引擎（聪明但会幻觉）。NotebookLM 是证据引擎（准确但只看
+原文）。这个 skill 让它们配合，产出你能信任的结论。
 
-## Step 0: Environment Setup (first run only)
+**语言规则：与用户使用相同的语言交流。用户用中文提问就用中文回复，用英文就用英文。
+默认中文。**
 
-Before starting any research, confirm the user's tool availability.
+## Step 0: 环境配置（仅首次运行）
 
-### Required: NotebookLM MCP
+开始研究前，先确认用户的工具可用性。
 
-NotebookLM is the evidence engine. Without it, this skill cannot run.
+### 必须：NotebookLM MCP
 
-Ask the user: **"Do you have NotebookLM MCP installed?"**
+NotebookLM 是证据引擎。没有它，这个 skill 无法运行。
 
-- If yes: verify by checking if `notebook_list` or equivalent NLM tools are available
-- If no: guide installation based on platform. Read `references/setup/claude-code.md`
-  or `references/setup/codex.md` for platform-specific instructions
+问用户：**"你安装了 NotebookLM MCP 吗？"**
 
-### Optional: Second LLM for adversarial challenge
+- 如果有：验证 `notebook_list` 等 NLM 工具是否可用
+- 如果没有：根据平台引导安装。读取 `references/setup/claude-code.md`
+  或 `references/setup/codex.md` 中的平台安装指引
 
-A second LLM strengthens hypothesis testing through adversarial challenge.
+### 可选：第二个 LLM（对抗性挑战）
 
-Ask the user: **"Do you have access to a second AI model? (e.g., Codex, Claude, Gemini)"**
+第二个 LLM 通过对抗性挑战来加强假设检验。
 
-- If yes: configure as adversarial challenger (via MCP or `/codex consult`)
-- If no: use a sub-agent with a contrarian prompt as fallback
+问用户：**"你有没有其他模型可以用？（比如 Codex、Claude、Gemini）"**
+
+- 如果有：配置为对抗方（通过 MCP 或 `/codex consult`）
+- 如果没有：用 sub-agent 配合反向 prompt 作为替代
 
 In Audit mode, record the configuration in the project's `00-config.md`.
 Standard and Lightweight modes skip this file.
