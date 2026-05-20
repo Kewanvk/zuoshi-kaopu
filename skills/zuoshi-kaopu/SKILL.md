@@ -21,31 +21,77 @@ version: 1.0.0
 **Language rule: match the user's language. If they write in Chinese, respond in
 Chinese. If they write in English, respond in English. Follow the user's lead.**
 
-## Step 0: 环境配置（仅首次运行）
+## Step 0: Environment Setup (MANDATORY)
 
-开始研究前，先确认用户的工具可用性。
+**CRITICAL: You MUST complete Step 0 before doing ANY research work. Do not skip
+this step. Do not proceed to Step 1 until the user has confirmed their setup.**
 
-### 必须：NotebookLM MCP
+The power of this skill comes from cross-model verification. A single model
+talking to itself cannot catch its own blind spots. Step 0 configures the
+tools that make "doing things right" actually work.
 
-NotebookLM 是证据引擎。没有它，这个 skill 无法运行。
+Ask the user these questions in sequence:
 
-问用户：**"你安装了 NotebookLM MCP 吗？"**
+### Question 1: NotebookLM (evidence engine, required)
 
-- 如果有：验证 `notebook_list` 等 NLM 工具是否可用
-- 如果没有：根据平台引导安装。读取 `references/setup/claude-code.md`
-  或 `references/setup/codex.md` 中的平台安装指引
+NotebookLM is the evidence engine. It verifies claims against source text.
+Without it, this skill cannot deliver on its core promise.
 
-### 可选：第二个 LLM（对抗性挑战）
+Ask: **"Do you have NotebookLM MCP installed? (It is free with a Google account.
+Install guide: `pipx install notebooklm-mcp-cli && nlm login && nlm setup add <your-platform>`)"**
 
-第二个 LLM 通过对抗性挑战来加强假设检验。
+- If yes: verify by checking if `notebook_list` or equivalent NLM tools are available
+- If no: walk them through installation. Read `references/setup/claude-code.md`
+  or `references/setup/codex.md` for platform-specific steps
+- **Do not proceed until NLM is confirmed working.**
 
-问用户：**"你有没有其他模型可以用？（比如 Codex、Claude、Gemini）"**
+### Question 2: Second model for adversarial challenge (recommended)
 
-- 如果有：配置为对抗方（通过 MCP 或 `/codex consult`）
-- 如果没有：用 sub-agent 配合反向 prompt 作为替代
+A second, independent model challenges your hypotheses from a different angle.
+This is what separates "reliable research" from "one model talking to itself."
 
-In Audit mode, record the configuration in the project's `00-config.md`.
-Standard and Lightweight modes skip this file.
+NotebookLM verifies facts against source text, but it does not challenge your
+reasoning. A second model does. Without it, the adversarial challenge step
+falls back to a weaker self-critique mode.
+
+Ask: **"Do you have access to any other AI model? This can be:"**
+
+- **A different major model**: Claude, Gemini, Kimi, DeepSeek, Qwen, GLM, Llama
+- **An API aggregator / proxy** (common in China): SiliconFlow, OneAPI, OpenRouter,
+  or any service where one API key lets you call multiple models
+- **A local model**: Ollama, LM Studio, or similar
+- **Another AI CLI tool**: Claude Code, Codex, Gemini CLI
+
+If the user has any of these, help them configure it:
+
+**Option A: API aggregator / proxy (one key, multiple models)**
+This is the easiest path for users who already have a subscription.
+The user provides their API base URL and key. The agent calls a different
+model through that API for the adversarial challenge step.
+Example: user has SiliconFlow -> can call Kimi, DeepSeek, Qwen through it.
+
+**Option B: Direct model API**
+User has a specific model's API key (Anthropic, Google, Moonshot, etc.).
+Configure as MCP server or direct HTTP call for the challenge step.
+
+**Option C: Another AI CLI tool**
+If on Codex and has Claude Code (or vice versa), use `/codex consult` or
+equivalent cross-tool invocation.
+
+**Option D: Local model**
+User runs Ollama or similar. Can be called via local HTTP API.
+
+**Option E: No second model available**
+Fall back to sub-agent with contrarian prompt. Explicitly tell the user:
+"Without a second model, the adversarial challenge will be weaker. I will
+do a self-critique pass instead, but this is less effective than true
+cross-model checking."
+
+### Record the configuration
+
+In Audit mode, record the configuration in the project's `00-config.md`:
+what models are available, how they are accessed, and what role each plays.
+Standard and Lightweight modes skip this file but still complete the setup.
 
 ## Five-Step Workflow
 
