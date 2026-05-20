@@ -1,64 +1,29 @@
 # zuoshi-kaopu
 
-**在"幻觉的聪明"和"愚笨的准确"之间，找到平衡。**
-
-每条结论都能查到来源、验证过程和置信度。
+**关键时刻两个动作：脑暴找漏洞，质证查原文。**
 
 [English](README.md)
 
-## 它产出什么
+## 它是什么
 
-大多数 AI 研究工具给你一份漂亮的报告配上引用。引用可以是装饰性的。这个 skill 先产出**证据轨迹**，再出报告。
+这不是一个研究工具。它是你工作中随时可以拉出来的两个动作。
 
-核心产出物是 **Claim Ledger（论断账本）**：
+**脑暴**：你觉得自己的想法可能有盲区时，说"脑暴"。另一个 AI 模型会专门挑战你的想法：
+找你没说出来的假设、逻辑漏洞、你没考虑到的问题。它只许提问，不给替代方案。你自己决定改不改。
 
-```
-| ID | 结论                    | 状态         | 原文引用                  | 来源           | 置信度     |
-|----|------------------------|-------------|--------------------------|---------------|-----------|
-| C1 | 营收超过 1000 万         | confirmed   | "总营收达到 1030 万"       | 年报 p.12     | direct    |
-| C2 | 2015 年成立             | corrected   | "2016 年 3 月注册成立"     | 工商登记       | direct    |
-| C3 | 细分市场领导者           | no_data     |                          |               |           |
-| C4 | 与 X 公司有合作关系       | source_conflict| 两份材料说法矛盾           | 新闻 + 年报    | indirect  |
-```
+比如：
+- 你写了一个商业方案，觉得定位不够锐利
+- 你做了一个分析，怀疑自己在套模板
+- 你要做一个重要决策，想听听反面意见
 
-`no_data` 的结论不会被悄悄删掉。它们留在那里。这就是重点。
+**质证**：你说了一个结论，想确认源材料是不是真的支持它，说"质证"。NotebookLM 会去查你的
+源材料原文，告诉你：有没有证据、证据原文是什么、这个证据能证明什么、不能证明什么。
+如果没有证据，直接说"没有"，不会编。
 
-## 工作原理
-
-LLM 聪明但会幻觉。NotebookLM 准确但只能看到你给它的东西。这个 skill 让它们配合：
-
-1. **定题 + 灌源**：定义研究问题，把信息源灌进 NotebookLM
-2. **出假设**：LLM 读材料、出假设、开始建 Claim Ledger
-3. **对抗性挑战**（自动触发）：第二个 LLM 或 sub-agent 挑战假设
-4. **质证**：NotebookLM 逐条验证每个假设，用原文引用
-5. **最终判断 + 交付**：基于已验证的结论出交付物 + Claim Ledger 附录
-
-## 什么时候用
-
-你的产出会被别人当真用，且有信息源需要处理：
-
-- 研究报告、行业分析
-- 文档/报告中的事实核查
-- 分析采访录音或逐字稿
-- 竞品/对标分析
-- 课程作业、论文
-- 任何"编的不行"的场景
-
-## 什么时候不用
-
-- 纯创意工作（没有"对不对"只有"好不好"）
-- 脑暴探索阶段（幻觉反而是优势）
-- 纯执行任务（部署、配置、搭建）
-
-## 三种模式
-
-| 模式 | 触发条件 | 产出 |
-|------|---------|------|
-| 轻量 | 结论影响小 + 源简单 | 单个文件，行内引用 |
-| 标准 | 默认 | 3 个文件（简报、论断、终稿） |
-| 审计 | 结论影响大 或 源复杂/冲突 | 完整文件链 + 完整 Claim Ledger |
-
-Skill 根据影响程度和源复杂度自动选择模式。
+比如：
+- 你引用了一份报告里的数据，想确认原文是不是这么说的
+- 你写了一个论点，想知道材料里有没有支撑
+- 同事说了一个事实，你想查一下出处
 
 ## 快速开始
 
@@ -67,15 +32,10 @@ Skill 根据影响程度和源复杂度自动选择模式。
 ```bash
 git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
 cd ~/zuoshi-kaopu && claude plugin add .
-
-# 安装 NotebookLM MCP（必须）
-pipx install notebooklm-mcp-cli
-nlm login
-nlm setup add claude-code
-nlm skill install claude-code
 ```
 
-然后在 Claude Code 中输入 `/zuoshi-kaopu`。
+输入 `/zuoshi-kaopu` 完成首次配置（安装 NotebookLM、配置第二模型）。
+配置完成后，在任何对话中说"脑暴"或"质证"即可。
 
 ### Codex CLI
 
@@ -83,41 +43,60 @@ nlm skill install claude-code
 git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
 mkdir -p ~/.codex/skills
 cp -r ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.codex/skills/zuoshi-kaopu
-
-# 安装 NotebookLM MCP（必须）
-pipx install notebooklm-mcp-cli
-nlm login
-nlm setup add codex
 ```
 
-然后在 Codex 中输入 `/zuoshi-kaopu`。
-
-详细的平台安装指南见 `skills/zuoshi-kaopu/references/setup/`。
+输入 `/zuoshi-kaopu` 完成首次配置。之后在任何对话中说"脑暴"或"质证"即可。
 
 ## 依赖
 
 | 依赖 | 是否必须 | 用途 |
 |-----|---------|------|
-| NotebookLM MCP | 是 | 证据引擎。提供基于原文的质证能力 |
-| 第二个 LLM（Codex/Claude/Gemini） | 否 | 对抗性挑战。没有则用 sub-agent 替代 |
+| NotebookLM MCP | 是 | 质证的证据引擎。对照源材料原文验证，返回精确引用 |
+| 第二个 LLM | 否 | 加强脑暴效果。没有的话用自我对抗模式替代 |
+
+NotebookLM 免费，用 Google 账号就行：
+```bash
+pipx install notebooklm-mcp-cli
+nlm login
+nlm setup add <你的平台>
+```
+
+第二个模型可以用 API 中转站（硅基流动、OneAPI、OpenRouter）、直接 API（Anthropic、Google、
+Moonshot）、另一个 CLI 工具、或本地模型。
+
+## 脑暴怎么工作的
+
+说"脑暴"时，skill 把你的想法发给第二个模型，附带严格的对抗协议：
+
+1. 找盲区和未说出的假设
+2. 找逻辑漏洞
+3. 提出你没考虑到的尖锐问题
+4. 每个发现分类：逻辑风险 / 证据风险 / 执行风险
+5. **不给替代方案。不夸你。只找问题。**
+
+你拿到一份挑战清单。你自己决定怎么改。
+
+## 质证怎么工作的
+
+说"质证"时，skill 查询 NotebookLM，返回一张证据卡：
+
+```
+论断：[你说的话]
+结论：有支撑 / 部分支撑 / 未找到 / 矛盾
+证据：[源材料原文引用]
+出处：[文档 + 位置]
+置信度：直接 / 间接 / 无数据 / 源冲突
+这个证据不能证明：[防止过度推断]
+```
+
+NotebookLM 找不到就说"未找到"。不会用通用知识填坑。
 
 ## 局限性
 
-- 不会主动搜索互联网。只处理你提供的信息源。如果你给它 URL 或要求它爬取特定页面，它会把这些作为信息源处理
-- NotebookLM 免费版每天约 50 次查询。大型项目可能需要多个 session
-- 对抗性挑战能发现盲点，但不能替代领域专业知识
-- "已验证"指的是对照已提供的信息源验证，不是对照所有可能的信息源
-- 无法验证需要视觉判断的非文本内容
-
-## 参考文件
-
-| 文件 | 用途 |
-|------|------|
-| `references/methodology.md` | 完整的五步工作流 |
-| `references/evidence-rules.md` | 证据处理规则 |
-| `references/error-patterns.md` | 8 条常见错误模式 |
-| `references/source-grading.md` | 来源可靠性分级（A/B/C/D/X） |
-| `references/claim-ledger-template.md` | Claim Ledger 格式规范 |
+- 质证只能查你提供的材料，不会搜索互联网
+- NotebookLM 免费版每天约 50 次查询
+- 脑暴能发现盲点，但不能替代领域专业知识
+- "有支撑"指的是你的材料支撑，不是所有可能的材料
 
 ## 许可
 

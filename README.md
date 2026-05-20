@@ -1,64 +1,32 @@
 # zuoshi-kaopu
 
-**AI research with a claim ledger.**
-
-Every conclusion is traceable to a source, a verification step, and a confidence level.
+**Two actions for when it matters: brainstorm blind spots, verify against sources.**
 
 [中文版](README.zh-CN.md)
 
-## What It Produces
+## What It Does
 
-Most AI research tools produce a polished report with citations. Citations can be decorative. This skill produces an **evidence trail first**, then a report.
+This is not a research tool. It is two actions you can use anytime during your work.
 
-The core artifact is a **Claim Ledger**:
+**Brainstorm** ("脑暴"): When you feel your thinking might have blind spots, say
+"brainstorm." A second AI model will challenge your ideas. It finds unstated
+assumptions, logical gaps, and things you have not considered. It only asks hard
+questions. It does not give you replacement solutions. You decide what to change.
 
-```
-| ID | Claim                        | Status     | Source Quote              | Source          | Confidence |
-|----|------------------------------|------------|---------------------------|-----------------|------------|
-| C1 | Revenue exceeded $10M        | confirmed  | "Total revenue: $10.3M"   | Annual Report   | direct     |
-| C2 | Founded in 2015              | corrected  | "Incorporated March 2016" | SEC Filing      | direct     |
-| C3 | Market leader in segment     | no_data    |                           |                 |            |
-| C4 | Partnership with Company X   | source_conflict| conflicting statements   | Press + Filing  | indirect   |
-```
+For example:
+- You wrote a business plan and the positioning feels off
+- You built an analysis framework and worry you are following a template
+- You are about to make a big decision and want to hear the other side
 
-Claims with `no_data` stay visible. They are not quietly dropped. That is the point.
+**Verify** ("质证"): When you said something and want to check if your source
+materials actually support it, say "verify." NotebookLM will search your documents
+and return the exact quote, the source location, and a confidence level. If there
+is no evidence, it says "not found." It does not make things up.
 
-## How It Works
-
-LLMs are smart but hallucinate. NotebookLM is accurate but narrow. This skill makes them work together:
-
-1. **Research Brief + Source Loading** : Define questions, load sources into NotebookLM
-2. **Hypothesis Generation** : LLM reads materials, forms hypotheses, starts the Claim Ledger
-3. **Adversarial Challenge** (auto-triggered) : Second LLM or sub-agent challenges the hypotheses
-4. **Evidence Verification** : NotebookLM verifies each claim with source quotes
-5. **Final Judgment + Delivery** : Synthesize verified claims into deliverable + Claim Ledger appendix
-
-## When to Use
-
-Use this skill when your output will be relied upon by others and you have source materials to process:
-
-- Research reports and industry analysis
-- Fact-checking claims from documents
-- Analyzing interview transcripts or recordings
-- Competitive and benchmark analysis
-- Academic assignments and papers
-- Any task where "I made it up" is not acceptable
-
-## When Not to Use
-
-- Pure creative work (no "right answer" exists)
-- Brainstorming and exploration (hallucination is a feature, not a bug)
-- Pure execution tasks (deploying, configuring, building)
-
-## Three Modes
-
-| Mode | When | Output |
-|------|------|--------|
-| Lightweight | Low stakes + simple sources | Single file with inline citations |
-| Standard | Default | 3 files (brief, claims, final) |
-| Audit | High stakes OR complex sources | Full file chain with complete Claim Ledger |
-
-The skill selects the mode automatically based on impact and source complexity.
+For example:
+- You cited a number from a report and want to confirm the original text
+- You wrote a claim and want to know if your materials back it up
+- A colleague stated a fact and you want to check the source
 
 ## Quick Start
 
@@ -67,15 +35,10 @@ The skill selects the mode automatically based on impact and source complexity.
 ```bash
 git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
 cd ~/zuoshi-kaopu && claude plugin add .
-
-# Install NotebookLM MCP (required)
-pipx install notebooklm-mcp-cli
-nlm login
-nlm setup add claude-code
-nlm skill install claude-code
 ```
 
-Then type `/zuoshi-kaopu` in Claude Code.
+Then type `/zuoshi-kaopu` to run first-time setup (installs NotebookLM, configures
+second model). After setup, just say "脑暴" or "质证" in any conversation.
 
 ### Codex CLI
 
@@ -83,41 +46,63 @@ Then type `/zuoshi-kaopu` in Claude Code.
 git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
 mkdir -p ~/.codex/skills
 cp -r ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.codex/skills/zuoshi-kaopu
-
-# Install NotebookLM MCP (required)
-pipx install notebooklm-mcp-cli
-nlm login
-nlm setup add codex
 ```
 
-Then type `/zuoshi-kaopu` in Codex.
-
-See `skills/zuoshi-kaopu/references/setup/` for detailed platform guides.
+Then type `/zuoshi-kaopu` to run first-time setup. After setup, just say
+"脑暴" or "质证" in any conversation.
 
 ## Dependencies
 
 | Dependency | Required | Purpose |
 |-----------|----------|---------|
-| NotebookLM MCP | Yes | Evidence engine. Provides grounded, source-quoted verification |
-| Second LLM (Codex/Claude/Gemini) | No | Adversarial challenge. Falls back to sub-agent if unavailable |
+| NotebookLM MCP | Yes | Evidence engine for "verify." Checks claims against source text with exact quotes |
+| Second LLM | No | Strengthens "brainstorm." Falls back to self-critique if unavailable |
 
-## Limitations and Trust Boundaries
+NotebookLM is free with a Google account. Install:
+```bash
+pipx install notebooklm-mcp-cli
+nlm login
+nlm setup add <your-platform>
+```
 
-- This skill does not search the internet on its own. It works with sources you provide. If you give it URLs or ask it to crawl specific pages, it will process those as sources
-- NotebookLM free tier allows ~50 queries/day. Large projects may need multiple sessions
-- The adversarial challenge catches blind spots but is not a substitute for domain expertise
-- "Verified" means checked against provided sources, not checked against all possible sources
-- The skill cannot verify claims that require visual inspection of non-text content
+For the second model, you can use an API aggregator (SiliconFlow, OneAPI, OpenRouter),
+a direct API key (Anthropic, Google, Moonshot), another CLI tool, or a local model.
 
-## Reference Files
+## How Brainstorm Works
 
-| File | Purpose |
-|------|---------|
-| `references/methodology.md` | Full five-step workflow |
-| `references/evidence-rules.md` | Evidence handling rules |
-| `references/error-patterns.md` | 8 common error patterns |
-| `references/source-grading.md` | Source reliability grading (A/B/C/D/X) |
-| `references/claim-ledger-template.md` | Claim Ledger format spec |
+When you say "brainstorm," the skill sends your thinking to a second model with
+a strict adversarial protocol:
+
+1. Find blind spots and unstated assumptions
+2. Identify logical gaps
+3. Ask hard questions you have not considered
+4. Classify each finding: logic risk / evidence risk / execution risk
+5. **No replacement solutions. No praise. Only problems.**
+
+You get back a list of challenges. You decide what to change.
+
+## How Verify Works
+
+When you say "verify," the skill queries NotebookLM and returns an evidence card:
+
+```
+Claim: [your statement]
+Verdict: supported / partially supported / not found / contradicted
+Evidence: [exact quote from source]
+Citation: [document + location]
+Confidence: direct / indirect / no_data / source_conflict
+What this does NOT prove: [prevents over-interpretation]
+```
+
+If NotebookLM finds nothing, it says "not found." It does not fill gaps with
+general knowledge.
+
+## Limitations
+
+- Verify works with sources you provide. It does not search the internet
+- NotebookLM free tier allows ~50 queries/day
+- Brainstorm catches blind spots but is not a substitute for domain expertise
+- "Supported" means supported by your sources, not by all possible sources
 
 ## License
 
