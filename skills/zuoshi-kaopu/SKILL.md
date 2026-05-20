@@ -18,8 +18,8 @@ version: 1.0.0
 **核心原则：** LLM 是假设引擎（聪明但会幻觉）。NotebookLM 是证据引擎（准确但只看
 原文）。这个 skill 让它们配合，产出你能信任的结论。
 
-**语言规则：与用户使用相同的语言交流。用户用中文提问就用中文回复，用英文就用英文。
-默认中文。**
+**Language rule: match the user's language. If they write in Chinese, respond in
+Chinese. If they write in English, respond in English. Follow the user's lead.**
 
 ## Step 0: 环境配置（仅首次运行）
 
