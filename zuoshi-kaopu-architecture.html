@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zuoshi-kaopu v4 Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Helvetica Neue', sans-serif; background: #fff; color: #1a1a1a; line-height: 1.6; padding: 40px 20px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .subtitle { font-size: 15px; color: #666; margin-bottom: 48px; }
+  h2 { font-size: 20px; font-weight: 700; margin: 48px 0 6px; letter-spacing: -0.3px; }
+  h2 .tag { font-size: 12px; font-weight: 500; color: #fff; background: #1a1a1a; padding: 2px 8px; border-radius: 3px; margin-left: 8px; vertical-align: middle; }
+  h3 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; }
+  p, li { font-size: 14px; }
+  .trigger { display: inline-block; font-size: 13px; font-weight: 500; color: #1a1a1a; background: #f0f0f0; padding: 2px 10px; border-radius: 3px; margin: 4px 4px 4px 0; }
+  .section-why { font-size: 13px; color: #555; margin: 8px 0 20px; padding-left: 12px; border-left: 3px solid #ddd; }
+
+  /* Flow chart styles */
+  .flow { margin: 20px 0 32px; }
+  .flow-step { position: relative; display: flex; align-items: flex-start; margin-bottom: 0; }
+  .flow-step::before { content: ''; position: absolute; left: 15px; top: 32px; bottom: -1px; width: 2px; background: #ccc; }
+  .flow-step:last-child::before { display: none; }
+  .flow-step.decision::before { background: #ccc; }
+
+  .step-dot { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: #1a1a1a; color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-right: 16px; margin-top: 0; }
+  .step-dot.decision-dot { border-radius: 4px; transform: rotate(0deg); background: #fff; border: 2px solid #1a1a1a; color: #1a1a1a; }
+  .step-dot.output-dot { background: #fff; border: 2px solid #1a1a1a; color: #1a1a1a; font-size: 11px; }
+
+  .step-body { flex: 1; padding-bottom: 24px; }
+  .step-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .step-what { font-size: 13px; color: #333; margin-bottom: 2px; }
+  .step-why { font-size: 12px; color: #888; }
+  .step-tech { font-size: 12px; color: #888; margin-top: 2px; }
+  .step-tech code { font-size: 11px; background: #f5f5f5; padding: 1px 5px; border-radius: 2px; }
+
+  .branch { margin-left: 48px; padding: 8px 0 8px 16px; border-left: 2px dashed #ccc; margin-bottom: 8px; }
+  .branch-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
+  .branch-content { font-size: 13px; color: #333; }
+
+  .output-box { margin: 8px 0 0 48px; padding: 10px 14px; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; }
+  .output-box .label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .output-box .files { font-size: 13px; }
+  .output-box .files code { font-size: 12px; background: #f0f0f0; padding: 1px 5px; border-radius: 2px; }
+
+  /* Overview diagram */
+  .overview { display: flex; align-items: center; justify-content: center; gap: 0; margin: 24px 0 40px; flex-wrap: wrap; }
+  .overview-box { padding: 12px 20px; border: 2px solid #1a1a1a; border-radius: 6px; text-align: center; min-width: 100px; }
+  .overview-box .name { font-size: 14px; font-weight: 700; }
+  .overview-box .desc { font-size: 11px; color: #666; margin-top: 2px; }
+  .overview-arrow { font-size: 20px; color: #999; padding: 0 6px; }
+  .overview-box.active { background: #1a1a1a; color: #fff; }
+  .overview-box.active .desc { color: #bbb; }
+
+  /* Tech stack */
+  .tech-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .tech-table th, .tech-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
+  .tech-table th { font-weight: 600; color: #666; font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .tech-table td:first-child { font-weight: 500; white-space: nowrap; }
+  .tech-table code { font-size: 12px; background: #f5f5f5; padding: 1px 5px; border-radius: 2px; }
+
+  .divider { border: none; border-top: 1px solid #eee; margin: 40px 0; }
+
+  /* Research flow */
+  .research-flow { margin: 20px 0; }
+  .rf-step { display: flex; align-items: flex-start; margin-bottom: 12px; }
+  .rf-num { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #1a1a1a; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-right: 12px; margin-top: 2px; }
+  .rf-content { flex: 1; }
+  .rf-title { font-size: 14px; font-weight: 600; }
+  .rf-desc { font-size: 13px; color: #555; }
+  .rf-ref { font-size: 12px; color: #999; }
+  .rf-arrow { text-align: center; color: #ccc; font-size: 14px; margin: 4px 0 4px 6px; }
+  .rf-loop { margin-left: 36px; padding: 6px 12px; border-left: 2px solid #1a1a1a; font-size: 12px; color: #555; margin-bottom: 8px; }
+
+  @media print { body { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>zuoshi-kaopu v4</h1>
+<p class="subtitle">做事靠谱 / 搜证 + 脑暴 + 质证，三个独立模块，一条完整研究链</p>
+
+<!-- Overview -->
+<div class="overview">
+  <div class="overview-box">
+    <div class="name">Section A</div>
+    <div class="desc">首次配置</div>
+  </div>
+  <div class="overview-arrow">/</div>
+  <div class="overview-box active">
+    <div class="name">Section B</div>
+    <div class="desc">搜证</div>
+  </div>
+  <div class="overview-arrow">&rarr;</div>
+  <div class="overview-box active">
+    <div class="name">Section C</div>
+    <div class="desc">脑暴</div>
+  </div>
+  <div class="overview-arrow">&rarr;</div>
+  <div class="overview-box active">
+    <div class="name">Section D</div>
+    <div class="desc">质证</div>
+  </div>
+</div>
+
+<p style="font-size:13px; color:#666; text-align:center; margin-top:-24px; margin-bottom:32px;">
+  B/C/D 各自独立调用。说"研究"时按 methodology.md 顺序串起来。
+</p>
+
+<hr class="divider">
+
+<!-- Section A -->
+<h2>Section A: 首次配置 <span class="tag">一次性</span></h2>
+<div class="trigger">做事靠谱</div> <div class="trigger">zuoshi-kaopu</div>
+<p class="section-why">检测并配置运行环境。NLM 是质证的基础设施，没它后面跑不了。第二模型让脑暴从自我对抗升级为跨模型对抗。</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="step-dot">1</div>
+    <div class="step-body">
+      <div class="step-title">介绍产品</div>
+      <div class="step-what">用三段话解释"搜证""脑暴""质证"各是什么、什么时候用</div>
+      <div class="step-why">用户需要知道自己装的是什么</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">2</div>
+    <div class="step-body">
+      <div class="step-title">环境检测</div>
+      <div class="step-what">检测 NotebookLM MCP 是否可用，第二模型（Codex / API）是否配置</div>
+      <div class="step-tech">技术: <code>notebook_list</code> 探测, Codex CLI / API 探测</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">3</div>
+    <div class="step-body">
+      <div class="step-title">引导配置</div>
+      <div class="step-what">缺什么装什么。NLM 必装，第二模型推荐装</div>
+      <div class="step-tech">技术: <code>pipx install notebooklm-mcp-cli</code>, <code>nlm login</code></div>
+    </div>
+  </div>
+</div>
+<div class="output-box">
+  <div class="label">产出物</div>
+  <div class="files"><code>00-config.md</code> 记录平台、NLM 状态、第二模型配置、日期</div>
+</div>
+
+<hr class="divider">
+
+<!-- Section B -->
+<h2>Section B: 搜证 <span class="tag">独立可调</span></h2>
+<div class="trigger">搜证</div> <div class="trigger">gather sources</div> <div class="trigger">找材料</div>
+<p class="section-why">WebFetch 返回 AI 摘要，实测丢失 93% 内容。后面 NLM 质证需要原文，所以搜集阶段必须拿到忠实于原文的版本。分两阶段：宽口快筛 + 窄口深度抓取，平衡效率和保真度。</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="step-dot">1</div>
+    <div class="step-body">
+      <div class="step-title">搜索</div>
+      <div class="step-what">WebSearch 按研究方向搜索，拿到 URL 列表</div>
+      <div class="step-why">发现候选源</div>
+      <div class="step-tech">技术: <code>WebSearch</code></div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">2</div>
+    <div class="step-body">
+      <div class="step-title">快筛</div>
+      <div class="step-what">WebFetch 对每个 URL 做快速摘要，判断相关性，筛选高价值源</div>
+      <div class="step-why">AI 摘要在判断"要不要深入"时是对的工具，200 字够判断相关性。不需要对每个 URL 都深度抓取</div>
+      <div class="step-tech">技术: <code>WebFetch</code> (AI 摘要, 有损但此处够用)</div>
+    </div>
+  </div>
+  <div class="flow-step decision">
+    <div class="step-dot decision-dot">?</div>
+    <div class="step-body">
+      <div class="step-title">筛选数量动态调节</div>
+      <div class="step-what">不是固定数字。取决于 Coverage Matrix 空格数、信息饱和度、研究深度</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">3</div>
+    <div class="step-body">
+      <div class="step-title">深度抓取</div>
+      <div class="step-what">对筛选后的高价值 URL，三层瀑布流抓取完整原文</div>
+      <div class="step-why">WebFetch 丢 93% 内容。curl + textutil 或 Playwright 拿到的是完整正文，没有 AI 处理</div>
+    </div>
+  </div>
+</div>
+
+<div class="branch">
+  <div class="branch-label">Layer 1: curl + textutil</div>
+  <div class="branch-content">大部分站点可用。macOS 原生，零依赖。拿到原始 HTML 转纯文本。</div>
+</div>
+<div class="branch">
+  <div class="branch-label">Layer 2: Playwright headless</div>
+  <div class="branch-content">curl 拿不到时（403 / JS 渲染）。headless Chromium 渲染后提取 article 正文，更干净。</div>
+</div>
+<div class="branch">
+  <div class="branch-label">Layer 3: 记录到 unfetched</div>
+  <div class="branch-content">Playwright 也过不去（WAF / 验证码 / 登录墙）。记录到 <code>raw/00-unfetched-sources.md</code>，标记手动获取。</div>
+</div>
+
+<div class="flow" style="margin-top: 20px;">
+  <div class="flow-step">
+    <div class="step-dot">4</div>
+    <div class="step-body">
+      <div class="step-title">本地落盘</div>
+      <div class="step-what">抓取结果存到 <code>raw/extracted/</code>，文件头标注来源 URL + 抓取日期 + 抓取方式</div>
+      <div class="step-why">本地副本是一切分析的地基，也是 NLM URL 灌不进去时的兜底材料</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">5</div>
+    <div class="step-body">
+      <div class="step-title">灌入 NLM</div>
+      <div class="step-what">NLM <code>source_add(url)</code> 让 NLM 自己抓取原文</div>
+      <div class="step-why">NLM 的原文副本是后续质证的权威源</div>
+      <div class="step-tech">技术: <code>mcp__notebooklm-mcp__source_add</code></div>
+    </div>
+  </div>
+  <div class="flow-step decision">
+    <div class="step-dot decision-dot">?</div>
+    <div class="step-body">
+      <div class="step-title">NLM 加载是否成功？</div>
+    </div>
+  </div>
+</div>
+
+<div class="branch">
+  <div class="branch-label">成功</div>
+  <div class="branch-content">正常流程。质证用 NLM 原文。</div>
+</div>
+<div class="branch">
+  <div class="branch-label">失败（中文站常见）</div>
+  <div class="branch-content"><code>source_add(file, raw/extracted/xxx.md)</code> 上传本地副本作为替代源。NLM 支持 MD/TXT/PDF 上传。</div>
+</div>
+
+<div class="output-box" style="margin-top: 16px;">
+  <div class="label">产出物</div>
+  <div class="files">
+    <code>raw/extracted/*.md</code> 本地原文副本（带元数据头）<br>
+    <code>raw/00-unfetched-sources.md</code> 无法自动获取的源列表<br>
+    NLM notebook 中已加载的源（URL 或文件）
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- Section C -->
+<h2>Section C: 脑暴 <span class="tag">独立可调</span></h2>
+<div class="trigger">脑暴</div> <div class="trigger">brainstorm</div> <div class="trigger">challenge this</div>
+<p class="section-why">用第二个模型做对抗性挑战。第二模型没参与你的推理过程，看不到你的确认偏误，所以能找到你自己找不到的盲区。关键约束：只许提问和找漏洞，不许给替代方案。</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="step-dot">1</div>
+    <div class="step-body">
+      <div class="step-title">理解上下文</div>
+      <div class="step-what">用户带着具体内容说"脑暴"，直接用。只说"脑暴"，问一句"你在想什么？哪个地方不踏实？"</div>
+      <div class="step-why">接受半成型的想法，不要求正式的 research question</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">2</div>
+    <div class="step-body">
+      <div class="step-title">发送挑战</div>
+      <div class="step-what">把用户的思考发给第二模型，附对抗性指令：找盲区、拆假设、提未考虑的问题。每个发现分类为逻辑风险 / 证据风险 / 执行风险</div>
+      <div class="step-why">分类帮助用户判断优先级：证据风险可以质证解决，逻辑风险需要重新思考</div>
+      <div class="step-tech">技术: <code>Codex CLI</code> / 第二模型 API / 跨 agent 调用</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">3</div>
+    <div class="step-body">
+      <div class="step-title">返回发现</div>
+      <div class="step-what">呈现挑战结果。提示"这里面有几个论断可能值得质证，要继续吗？"</div>
+      <div class="step-why">自然过渡到质证环节，但不强制</div>
+    </div>
+  </div>
+</div>
+
+<div class="output-box">
+  <div class="label">产出物</div>
+  <div class="files">
+    挑战发现列表（每条含：被挑战的点 + 为什么是问题 + 风险类型）<br>
+    在完整研究流程中写入 <code>04-challenge.md</code>
+  </div>
+</div>
+
+<div style="margin-top: 16px; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px; background: #fafafa;">
+  <strong>对抗协议六条：</strong>
+  <ol style="margin: 6px 0 0 18px; font-size: 12px; color: #555;">
+    <li>找盲区和未声明的假设</li>
+    <li>找逻辑缺口和弱推理</li>
+    <li>提用户没考虑过的硬问题</li>
+    <li>每条分类：逻辑风险 / 证据风险 / 执行风险</li>
+    <li>不许给替代方案</li>
+    <li>不许表扬。你的工作是找问题</li>
+  </ol>
+</div>
+
+<hr class="divider">
+
+<!-- Section D -->
+<h2>Section D: 质证 <span class="tag">独立可调</span></h2>
+<div class="trigger">质证</div> <div class="trigger">verify</div> <div class="trigger">check against sources</div>
+<p class="section-why">LLM 是假设引擎，NLM 是证据引擎。LLM 提假设，NLM 用原文回答。反过来不行。NLM 自己的综合性回答不是证据，只有它引用的原文才是。</p>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="step-dot">1</div>
+    <div class="step-body">
+      <div class="step-title">确定待验证声明</div>
+      <div class="step-what">用户指定具体声明，或从脑暴结果中提取证据风险项</div>
+      <div class="step-why">有针对性地验证，不做泛泛检索</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">2</div>
+    <div class="step-body">
+      <div class="step-title">确认源已加载</div>
+      <div class="step-what">检查 NLM notebook 中是否有相关源。缺的补上（URL / 文件 / 文本）</div>
+      <div class="step-why">没有源就没有证据</div>
+      <div class="step-tech">技术: <code>source_add(url | file | text)</code></div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">3</div>
+    <div class="step-body">
+      <div class="step-title">查询验证</div>
+      <div class="step-what">把声明转化成 NLM query。提取阶段和验证阶段分开：先查一遍收集候选证据，再换问法重新查确认</div>
+      <div class="step-why">同一个问题换问法能暴露第一遍漏掉的证据或矛盾</div>
+      <div class="step-tech">技术: <code>mcp__notebooklm-mcp__notebook_query</code></div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">4</div>
+    <div class="step-body">
+      <div class="step-title">三层检查</div>
+      <div class="step-what">对每条证据做三层独立验证：链接是否有效 &rarr; 内容是否相关 &rarr; 事实是否支撑声明</div>
+      <div class="step-why">研究表明链接有效率 94%+，但事实支撑率只有 39-77%。"链接在"不等于"内容支撑"。表面指标会骗人</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="step-dot">5</div>
+    <div class="step-body">
+      <div class="step-title">出具证据卡</div>
+      <div class="step-what">每条声明生成一张证据卡：声明 / 判定(supported, not found, contradicted) / 原文引用 / 来源 / 置信度 / 此证据不能证明什么</div>
+      <div class="step-why">最后一栏"不能证明什么"防止过度解读</div>
+    </div>
+  </div>
+</div>
+
+<div class="output-box">
+  <div class="label">产出物</div>
+  <div class="files">
+    Claim Ledger（每条含 ID / 声明 / 状态 / 原文引用 / 来源 / 置信度）<br>
+    在完整研究流程中写入 <code>05-evidence.md</code>
+  </div>
+</div>
+
+<div style="margin-top: 16px; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px; background: #fafafa;">
+  <strong>信源分级：</strong>
+  <table style="width:100%; font-size: 12px; margin-top: 6px; border-collapse: collapse;">
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:4px 0;"><strong>A</strong></td><td style="padding:4px 8px;">一手官方文件</td><td style="color:#888;">年报、法院文件、SEC 备案</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:4px 0;"><strong>B</strong></td><td style="padding:4px 8px;">官方网站 / 自述</td><td style="color:#888;">公司官网、LinkedIn、个人声明</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:4px 0;"><strong>C</strong></td><td style="padding:4px 8px;">第三方数据库</td><td style="color:#888;">Bloomberg、Crunchbase</td></tr>
+    <tr style="border-bottom:1px solid #eee;"><td style="padding:4px 0;"><strong>D</strong></td><td style="padding:4px 8px;">新闻 / 二手报道</td><td style="color:#888;">媒体文章、Wikipedia</td></tr>
+    <tr><td style="padding:4px 0;"><strong>X</strong></td><td style="padding:4px 8px;">推断 / 假设</td><td style="color:#888;">禁止使用。标记"无公开来源"</td></tr>
+  </table>
+</div>
+
+<hr class="divider">
+
+<!-- Full Research Flow -->
+<h2>完整研究流程</h2>
+<div class="trigger">研究</div> <div class="trigger">research</div> <div class="trigger">调查</div>
+<p class="section-why">说"研究 + 话题"时触发。按 methodology.md 工序顺序调用 Section B/C/D，加上契约、综合、自检环节。不是单独的 Section，是对三个模块的编排。</p>
+
+<div class="research-flow">
+  <div class="rf-step">
+    <div class="rf-num">0</div>
+    <div class="rf-content">
+      <div class="rf-title">契约</div>
+      <div class="rf-desc">问两个问题确定本次研究的目的和深度：为了理解还是做决定？快速概览还是独立判断？</div>
+      <div class="rf-ref">决定模式：Lightweight / Standard / Audit</div>
+    </div>
+  </div>
+  <div class="rf-arrow">&darr;</div>
+  <div class="rf-step">
+    <div class="rf-num">1</div>
+    <div class="rf-content">
+      <div class="rf-title">搜证 + Coverage Matrix</div>
+      <div class="rf-desc">调用 Section B。搜索方向由 Coverage Matrix 空行驱动。信息重复 = 该维度饱和。</div>
+      <div class="rf-ref">产出: <code>raw/</code>, <code>02-coverage.md</code></div>
+    </div>
+  </div>
+  <div class="rf-loop">Matrix 有空行且未饱和 &rarr; 继续搜证</div>
+  <div class="rf-arrow">&darr;</div>
+  <div class="rf-step">
+    <div class="rf-num">2</div>
+    <div class="rf-content">
+      <div class="rf-title">综合假设 + Claim Ledger</div>
+      <div class="rf-desc">基于已有材料形成候选结论，每条标 unverified。关键声明无源支撑则回 Step 1。</div>
+      <div class="rf-ref">产出: <code>03-hypotheses.md</code></div>
+    </div>
+  </div>
+  <div class="rf-loop">关键声明无源 &rarr; 回 Step 1 补搜</div>
+  <div class="rf-arrow">&darr;</div>
+  <div class="rf-step">
+    <div class="rf-num">3</div>
+    <div class="rf-content">
+      <div class="rf-title">脑暴 + 质证（并行）</div>
+      <div class="rf-desc">Section C 挑战假设，Section D 验证声明。脑暴发现遗漏维度过门控后加入 Matrix 回 Step 1。</div>
+      <div class="rf-ref">产出: <code>04-challenge.md</code>, <code>05-evidence.md</code></div>
+    </div>
+  </div>
+  <div class="rf-loop">遗漏维度过门控 &rarr; 回 Step 1 补搜</div>
+  <div class="rf-arrow">&darr;</div>
+  <div class="rf-step">
+    <div class="rf-num">4</div>
+    <div class="rf-content">
+      <div class="rf-title">冻结 + 5问自检</div>
+      <div class="rf-desc">冻结操作层标准（不再新增维度）。列 5 个"聪明人会追问的问题"，标注覆盖情况，用户确认"够了"。</div>
+    </div>
+  </div>
+  <div class="rf-loop">用户说"这块再补" &rarr; 回 Step 1（只补证据，不加维度）</div>
+  <div class="rf-arrow">&darr;</div>
+  <div class="rf-step">
+    <div class="rf-num">5</div>
+    <div class="rf-content">
+      <div class="rf-title">最终综合 + 交付</div>
+      <div class="rf-desc">Claim Ledger 各状态按规则处理。交付物 = 正文 + Claim Ledger 附录 + Coverage Matrix 摘要。</div>
+      <div class="rf-ref">产出: <code>06-judgment.md</code>, <code>07-deliverable.*</code></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- Tech Stack -->
+<h2>技术栈</h2>
+
+<table class="tech-table">
+  <thead>
+    <tr><th>能力</th><th>工具</th><th>用在哪</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>网页搜索</td>
+      <td><code>WebSearch</code></td>
+      <td>搜证 Step 1：发现候选 URL</td>
+    </tr>
+    <tr>
+      <td>快速筛选</td>
+      <td><code>WebFetch</code></td>
+      <td>搜证 Step 2：AI 摘要判断相关性（有损，此处够用）</td>
+    </tr>
+    <tr>
+      <td>原文抓取 L1</td>
+      <td><code>curl</code> + <code>textutil</code></td>
+      <td>搜证 Step 3：静态站原文。macOS 原生，零依赖</td>
+    </tr>
+    <tr>
+      <td>原文抓取 L2</td>
+      <td><code>Playwright</code> (Chromium)</td>
+      <td>搜证 Step 3：JS 渲染站 / curl 403 兜底</td>
+    </tr>
+    <tr>
+      <td>证据引擎</td>
+      <td><code>NotebookLM</code> via MCP</td>
+      <td>搜证 Step 5 灌源 / 质证全流程 / 源文引用验证</td>
+    </tr>
+    <tr>
+      <td>NLM 工具集</td>
+      <td><code>mcp__notebooklm-mcp__*</code></td>
+      <td><code>source_add</code> / <code>notebook_query</code> / <code>notebook_create</code></td>
+    </tr>
+    <tr>
+      <td>对抗性挑战</td>
+      <td><code>Codex CLI</code> / 第二模型 API</td>
+      <td>脑暴：跨模型盲区发现</td>
+    </tr>
+    <tr>
+      <td>自我对抗（备用）</td>
+      <td>Sub-agent / 自我角色切换</td>
+      <td>脑暴：无第二模型时的降级方案</td>
+    </tr>
+    <tr>
+      <td>过程文档</td>
+      <td>Markdown 文件链</td>
+      <td>01-brief &rarr; 02-coverage &rarr; 03-hypotheses &rarr; ... &rarr; 07-deliverable</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="divider">
+
+<h2>三种模式</h2>
+
+<table class="tech-table">
+  <thead>
+    <tr><th>模式</th><th>触发条件</th><th>差异</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Lightweight</td>
+      <td>理解 + 快速概览</td>
+      <td>Coverage Matrix 内联，跳过脑暴，3问自检，单文件产出</td>
+    </tr>
+    <tr>
+      <td>Standard</td>
+      <td>理解 + 独立判断</td>
+      <td>完整 Coverage Matrix，完整脑暴+质证，5问自检，4文件产出</td>
+    </tr>
+    <tr>
+      <td>Audit</td>
+      <td>为了做决定</td>
+      <td>完整文件链 00-07，Claim Ledger 贯穿全程，Standard Changelog 可选</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+</body>
+</html>

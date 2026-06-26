@@ -1,32 +1,32 @@
 # zuoshi-kaopu
 
-**Two actions for when it matters: brainstorm blind spots, verify against sources.**
+**Three actions for when it matters: gather sources, brainstorm blind spots, verify against evidence.**
 
 [中文版](README.zh-CN.md)
 
 ## What It Does
 
-This is not a research tool. It is two actions you can use anytime during your work.
+Three actions you can use anytime during your work. Plus a full research mode
+that chains them together.
+
+**Gather** ("搜证"): When you need materials from the web, say "gather sources."
+It searches, quickly filters for relevance, then captures the full original text
+of high-value sources. Saves everything locally and loads it into NotebookLM
+so you can verify claims later.
 
 **Brainstorm** ("脑暴"): When you feel your thinking might have blind spots, say
-"brainstorm." A second AI model will challenge your ideas. It finds unstated
-assumptions, logical gaps, and things you have not considered. It only asks hard
-questions. It does not give you replacement solutions. You decide what to change.
-
-For example:
-- You wrote a business plan and the positioning feels off
-- You built an analysis framework and worry you are following a template
-- You are about to make a big decision and want to hear the other side
+"brainstorm." A second AI model challenges your ideas: finds unstated assumptions,
+logical gaps, and things you have not considered. It only asks hard questions.
+No replacement solutions. You decide what to change.
 
 **Verify** ("质证"): When you said something and want to check if your source
-materials actually support it, say "verify." NotebookLM will search your documents
-and return the exact quote, the source location, and a confidence level. If there
-is no evidence, it says "not found." It does not make things up.
+materials actually support it, say "verify." NotebookLM searches your documents
+and returns the exact quote, the source location, and a confidence level. If
+there is no evidence, it says "not found." It does not make things up.
 
-For example:
-- You cited a number from a report and want to confirm the original text
-- You wrote a claim and want to know if your materials back it up
-- A colleague stated a fact and you want to check the source
+**Research** ("研究 + topic"): Runs the full flow. Defines the research scope,
+gathers sources, forms hypotheses, challenges them, verifies claims, and
+delivers a report with a complete evidence trail.
 
 ## Quick Start
 
@@ -37,8 +37,9 @@ git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
 cd ~/zuoshi-kaopu && claude plugin add .
 ```
 
-Then type `/zuoshi-kaopu` to run first-time setup (installs NotebookLM, configures
-second model). After setup, just say "脑暴" or "质证" in any conversation.
+Then type `/zuoshi-kaopu` to run first-time setup (installs NotebookLM,
+configures second model). After setup, just say "搜证", "脑暴", or "质证"
+in any conversation.
 
 ### Codex CLI
 
@@ -48,30 +49,32 @@ mkdir -p ~/.codex/skills
 cp -r ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.codex/skills/zuoshi-kaopu
 ```
 
-Then type `/zuoshi-kaopu` to run first-time setup. After setup, just say
-"脑暴" or "质证" in any conversation.
+Then type `/zuoshi-kaopu` to run first-time setup.
 
-## Dependencies
+## How Each Action Works
 
-| Dependency | Required | Purpose |
-|-----------|----------|---------|
-| NotebookLM MCP | Yes | Evidence engine for "verify." Checks claims against source text with exact quotes |
-| Second LLM | No | Strengthens "brainstorm." Falls back to self-critique if unavailable |
+### Gather ("搜证")
 
-NotebookLM is free with a Google account. Install:
-```bash
-pipx install notebooklm-mcp-cli
-nlm login
-nlm setup add <your-platform>
+```
+WebSearch → URL list
+    ↓
+WebFetch quick scan → filter by relevance (AI summary, fast)
+    ↓
+curl / Playwright → capture full original text (no AI processing)
+    ↓
+Save to raw/ locally + load into NotebookLM
 ```
 
-For the second model, you can use an API aggregator (SiliconFlow, OneAPI, OpenRouter),
-a direct API key (Anthropic, Google, Moonshot), another CLI tool, or a local model.
+Why two steps? WebFetch returns AI summaries that lose ~93% of content. That is
+fine for judging "is this relevant?" but not for evidence. The deep capture step
+gets the real text.
 
-## How Brainstorm Works
+If NotebookLM cannot load a URL (common with Chinese sites), the locally saved
+file is uploaded as a fallback.
 
-When you say "brainstorm," the skill sends your thinking to a second model with
-a strict adversarial protocol:
+### Brainstorm ("脑暴")
+
+Your thinking goes to a second AI model with a strict adversarial protocol:
 
 1. Find blind spots and unstated assumptions
 2. Identify logical gaps
@@ -81,26 +84,60 @@ a strict adversarial protocol:
 
 You get back a list of challenges. You decide what to change.
 
-## How Verify Works
+### Verify ("质证")
 
-When you say "verify," the skill queries NotebookLM and returns an evidence card:
+Claims are checked against NotebookLM with a three-layer verification:
+
+1. **Link works?** Is the source URL still accessible?
+2. **Content relevant?** Does the page actually discuss this topic?
+3. **Fact supported?** Does the text actually support this specific claim?
+
+Each claim gets an evidence card:
 
 ```
-Claim: [your statement]
-Verdict: supported / partially supported / not found / contradicted
-Evidence: [exact quote from source]
-Citation: [document + location]
+Claim:      [your statement]
+Verdict:    supported / not found / contradicted
+Evidence:   [exact quote from source]
+Citation:   [document + location]
 Confidence: direct / indirect / no_data / source_conflict
-What this does NOT prove: [prevents over-interpretation]
 ```
 
-If NotebookLM finds nothing, it says "not found." It does not fill gaps with
+If NotebookLM finds nothing, it says "not found." No gap-filling with
 general knowledge.
+
+### Research ("研究 + topic")
+
+The full flow chains all three actions:
+
+```
+Contract → Gather + Coverage Matrix → Hypotheses → Brainstorm + Verify → Deliver
+```
+
+Two questions set the scope: "understand or decide?" and "quick overview or
+independent judgment?" This determines the mode (Lightweight / Standard / Audit)
+and how thorough each step is.
+
+## Dependencies
+
+| Dependency | Required | Purpose |
+|-----------|----------|---------|
+| NotebookLM MCP | Yes | Evidence engine for verify and source loading |
+| Second LLM | No | Strengthens brainstorm. Falls back to self-critique |
+| curl + textutil | Yes (macOS) | Source capture Layer 1. Built-in, zero setup |
+| Playwright | No | Source capture Layer 2. For JS-rendered sites |
+
+NotebookLM is free with a Google account:
+```bash
+pipx install notebooklm-mcp-cli
+nlm login
+nlm setup add <your-platform>
+```
 
 ## Limitations
 
-- Verify works with sources you provide. It does not search the internet
-- NotebookLM free tier allows ~50 queries/day
+- Verify works with sources you provide, not the entire internet
+- Some sites block all automated access (captcha, login walls). These are
+  logged for manual retrieval
 - Brainstorm catches blind spots but is not a substitute for domain expertise
 - "Supported" means supported by your sources, not by all possible sources
 
