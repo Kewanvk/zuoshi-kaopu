@@ -10,6 +10,45 @@
 | D | News / secondary reporting | Media articles, Wikipedia, press releases | Cross-verify with two other sources |
 | X | Inference / assumption | Guessing from surname, appearance, or indirect signals | Never use. Mark "no public source" |
 
+## Academic Paper Credibility Audit
+
+Before extracting data from any academic paper, run these checks:
+
+### Mandatory (do before citing)
+
+1. **Journal check**: Is the journal on Beall's List or known predatory publisher lists?
+   Search: `"[journal name]" predatory OR "beall's list"`. If yes, downgrade to Grade D
+   and flag prominently.
+
+2. **Too-good-to-be-true gate**: 100% success rates, zero side effects, or claims
+   that one intervention cures everything should trigger extra scrutiny, not acceptance.
+
+3. **Author publication pattern**: Search author name + key terms. If the same team
+   claims the same product cures vastly different diseases across species
+   (humans + pigs + chickens + dogs + cats + fish), this is a "miracle cure" red flag.
+
+4. **Institution name verification**: Translate institution names back to the original
+   language and verify. Do not substitute similar-sounding prestigious names
+   (e.g., Tongrun Tang ≠ Tongrentang/同仁堂). This is a factual error, not a
+   judgment call.
+
+5. **Ingredient/method disclosure**: If the paper does not disclose the intervention's
+   composition (ingredients, dosage, preparation), it cannot be independently
+   verified or replicated. Note this as a limitation.
+
+### Red flags (any one = flag the source)
+
+- Published exclusively in low-impact or predatory journals
+- No independent replication by other teams
+- Authors acknowledge data is from "clinical observations" not controlled trials
+- Study subjects obtained through unusual means (e.g., human clinic capturing feral cats)
+- Conflicts of interest not disclosed despite commercial product being tested
+
+### Grading override
+
+A paper with DOI and tables but published in a predatory journal should be graded
+**D or lower**, not B. "Has DOI" ≠ "credible."
+
 ## Important Caveat
 
 Source grade is an initial label, not a final judgment.

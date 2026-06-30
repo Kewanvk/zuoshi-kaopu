@@ -4,21 +4,20 @@
 
 ```bash
 # Clone the repo
-git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
+git clone https://github.com/Kewanvk/vkskill.git ~/vkskill
 
-# Link skill to the Codex skills directory
-mkdir -p ~/.agents/skills
-ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
+# Install all vkskill entries
+cd ~/vkskill
+./install-codex.sh
 ```
 
-After installation, restart Codex to load the skill. To run first-time setup,
-tell Codex:
-"Use the zuoshi-kaopu skill to [your research task]."
+After installation, restart Codex to load the skills. To run first-time setup,
+tell Codex `vkskill` or `vkskill-proof`.
 
-You can also say `zuoshi-kaopu` or `做事靠谱`.
+Old triggers `zuoshi-kaopu` and `做事靠谱` still work.
 
-Some older Codex setups use `~/.codex/skills`. If the skill does not appear
-after restart, copy or link the same folder there.
+Some older Codex setups use `~/.codex/skills`. If the skills do not appear
+after restart, copy or link every folder under `skills/` there.
 
 ## 2. Install NotebookLM MCP (Required)
 
@@ -78,5 +77,5 @@ The skill will spawn a sub-agent with a contrarian prompt as fallback.
 Once setup is complete:
 
 1. Open Codex in your project directory
-2. Tell Codex: `zuoshi-kaopu` or "Use the zuoshi-kaopu skill to [your research task]"
+2. Tell Codex: `vkskill`, `vkskill-proof`, `找证据`, `找漏洞`, or `验证说法`
 3. The skill will guide you through environment verification and the five-step workflow

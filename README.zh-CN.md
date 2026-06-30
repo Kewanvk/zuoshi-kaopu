@@ -1,136 +1,100 @@
-# zuoshi-kaopu
+# vkskill
 
-**关键时刻三个动作：搜证找材料，脑暴找漏洞，质证查原文。**
+**可万的 Codex 工作流。**
 
 [English](README.md)
 
 ## 它是什么
 
-三个你工作中随时可以拉出来的动作。加一个完整研究模式，把三个串起来。
+`vkskill` 是一组 Codex skill。第一组功能叫 `vkskill-proof`。
 
-**搜证**：你需要从网上找材料时，说"搜证"。它会搜索、快速筛选相关性、然后对
-值得深入的源抓取完整原文。存到本地，同时灌进 NotebookLM，后面质证的时候有据可查。
+`vkskill-proof` 做三件事：
 
-**脑暴**：你觉得自己的想法可能有盲区时，说"脑暴"。另一个 AI 模型会专门挑战你的想法：
-找你没说出来的假设、逻辑漏洞、你没考虑到的问题。它只许提问，不给替代方案。
-你自己决定改不改。
+1. 找证据
+2. 找漏洞
+3. 验证说法
 
-**质证**：你说了一个结论，想确认源材料是不是真的支持它，说"质证"。NotebookLM 会去查
-你的源材料原文，告诉你：有没有证据、证据原文是什么、能证明什么、不能证明什么。
-如果没有证据，直接说"没有"，不会编。
+它还有一个完整研究模式，可以把这三件事串起来。
 
-**研究**：说"研究 + 话题"跑完整流程。定范围、搜证、形成假设、脑暴挑战、质证验证、
-出报告。全程有证据链。
-
-## 快速开始
-
-### Claude Code
+## Codex 安装
 
 ```bash
-git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
-cd ~/zuoshi-kaopu && claude plugin add .
+git clone https://github.com/Kewanvk/vkskill.git ~/vkskill
+cd ~/vkskill
+./install-codex.sh
 ```
 
-输入 `/zuoshi-kaopu` 完成首次配置（安装 NotebookLM、配置第二模型）。
-配置完成后，在任何对话中说"搜证""脑暴"或"质证"即可。
+安装后重启 Codex。
 
-### Codex CLI
+然后可以直接说：
 
-```bash
-git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
-mkdir -p ~/.agents/skills
-ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
+```text
+vkskill
+vkskill-proof
+找证据
+找漏洞
+验证说法
+研究 AI 搜索产品
 ```
 
-重启 Codex 后，对 Codex 说 `zuoshi-kaopu` 或 `做事靠谱` 完成首次配置。
+旧触发词 `zuoshi-kaopu` 和 `做事靠谱` 仍然可用。
 
-旧版 Codex 可能使用 `~/.codex/skills`。如果重启后没有识别到这个 skill，
-把同一个 `skills/zuoshi-kaopu` 文件夹复制或链接到那里。
+## Skill 列表
 
-## 每个动作怎么工作的
-
-### 搜证
-
-```
-WebSearch → URL 列表
-    ↓
-WebFetch 快速扫描 → 筛选相关性（AI 摘要，快）
-    ↓
-curl / Playwright → 抓取完整原文（不经过 AI 处理）
-    ↓
-存到 raw/ 本地 + 灌进 NotebookLM
-```
-
-为什么分两步？WebFetch 返回的是 AI 摘要，实测丢失约 93% 的内容。判断"这篇值不值得
-看"够用了，但做不了证据。深度抓取那步拿到的是真正的原文。
-
-如果 NotebookLM 加载不了某个链接（中文站常见），本地存的文件会作为备用上传。
-
-### 脑暴
-
-你的想法发给第二个模型，附带对抗协议：
-
-1. 找盲区和未说出的假设
-2. 找逻辑漏洞
-3. 提出你没考虑到的尖锐问题
-4. 每个发现分类：逻辑风险 / 证据风险 / 执行风险
-5. **不给替代方案。不夸你。只找问题。**
-
-你拿到一份挑战清单。你自己决定怎么改。
-
-### 质证
-
-用 NotebookLM 做三层验证：
-
-1. **链接有效？** 源 URL 还能访问吗？
-2. **内容相关？** 页面真的在讨论这个话题吗？
-3. **事实支撑？** 原文真的支持这条具体声明吗？
-
-每条声明生成一张证据卡：
-
-```
-论断：  [你说的话]
-结论：  有支撑 / 未找到 / 矛盾
-证据：  [源材料原文引用]
-出处：  [文档 + 位置]
-置信度：直接 / 间接 / 无数据 / 源冲突
-```
-
-找不到就说"未找到"。不用通用知识填坑。
-
-### 研究
-
-完整流程把三个动作串起来：
-
-```
-契约 → 搜证 + 覆盖矩阵 → 假设 → 脑暴 + 质证 → 交付
-```
-
-开始前两个问题定范围："为了理解还是做决定？""快速概览还是独立判断？"
-决定模式（轻量 / 标准 / 审计）和每一步的深度。
+| Skill | 用途 |
+|---|---|
+| `vkskill` | 总入口。判断你要用哪个工作流。 |
+| `vkskill-proof` | 证据工作流入口。展示三个动作。 |
+| `vkskill-source` | 找材料，保存原文，灌进 NotebookLM。 |
+| `vkskill-challenge` | 找漏洞，拆假设，看逻辑风险。 |
+| `vkskill-verify` | 用 NotebookLM 验证某个说法有没有原文支撑。 |
+| `vkskill-research` | 跑完整研究流程。 |
+| `zuoshi-kaopu` | 旧名字兼容入口。 |
 
 ## 依赖
 
 | 依赖 | 是否必须 | 用途 |
-|-----|---------|------|
-| NotebookLM MCP | 是 | 质证的证据引擎 + 灌源 |
-| 第二个 LLM | 否 | 加强脑暴效果。没有的话用自我对抗替代 |
-| curl + textutil | 是 (macOS) | 搜证抓取第一层。系统自带，不用装 |
-| Playwright 或浏览器工具 | 否 | 搜证抓取第二层。处理 JS 渲染的站 |
+|---|---|---|
+| NotebookLM MCP | 质证必须 | 灌源和验证说法 |
+| curl + textutil | macOS 必须 | 第一层网页原文抓取 |
+| 第二个模型或 MiMo | 可选 | 提高脑暴质量 |
+| 浏览器工具或 Playwright | 可选 | 处理 JS 渲染网页 |
 
-NotebookLM 免费，用 Google 账号就行：
+NotebookLM 安装：
+
 ```bash
 pipx install notebooklm-mcp-cli
 nlm login
-nlm setup add <你的平台>
+nlm setup add codex
 ```
 
-## 局限性
+## 三个动作
 
-- 质证只能查你提供的材料，不会搜索互联网
-- 有些网站挡住所有自动访问（验证码、登录墙），会记录下来等手动获取
-- 脑暴能发现盲点，但不能替代领域专业知识
-- "有支撑"指的是你的材料支撑，不是所有可能的材料
+### 找证据
+
+搜索网页，筛选来源，保存完整原文到 `raw/`，再把来源灌进 NotebookLM。
+
+### 找漏洞
+
+把你的想法过一遍对抗检查。输出盲区、隐藏假设、逻辑漏洞和证据风险。
+
+### 验证说法
+
+用 NotebookLM 查源材料是否支持某个具体说法。输出证据卡，包括原文、来源、结论、置信度和不能证明什么。
+
+### 研究
+
+完整流程：
+
+```text
+定范围 -> 找证据 -> 论断账本 -> 找漏洞 -> 质证 -> 最终判断
+```
+
+## 边界
+
+- 质证只检查你提供的材料。
+- 有些网站会挡住自动抓取。
+- NotebookLM 引用的原文才算证据。NotebookLM 自己的总结仍然要判断。
 
 ## 许可
 
