@@ -6,13 +6,16 @@
 # Clone the repo
 git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
 
-# Copy skill to Codex skills directory
-mkdir -p ~/.codex/skills
-cp -r ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.codex/skills/zuoshi-kaopu
+# Link skill to the Codex skills directory
+mkdir -p ~/.agents/skills
+ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
 ```
 
 After installation, restart Codex to load the skill. To use it, tell Codex:
 "Use the zuoshi-kaopu skill to [your research task]."
+
+Some older Codex setups use `~/.codex/skills`. If the skill does not appear
+after restart, copy or link the same folder there.
 
 ## 2. Install NotebookLM MCP (Required)
 

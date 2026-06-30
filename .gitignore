@@ -1,0 +1,10 @@
+# Local environment config
+skills/*/00-config.md
+
+# Generated docs
+readme-print.html
+
+# Editor temp files
+*.swp
+*.swo
+*~

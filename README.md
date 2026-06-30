@@ -45,11 +45,15 @@ in any conversation.
 
 ```bash
 git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
-mkdir -p ~/.codex/skills
-cp -r ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.codex/skills/zuoshi-kaopu
+mkdir -p ~/.agents/skills
+ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
 ```
 
-Then type `/zuoshi-kaopu` to run first-time setup.
+Then restart Codex and type `/zuoshi-kaopu` to run first-time setup.
+
+Older Codex setups may use `~/.codex/skills` instead of `~/.agents/skills`.
+If Codex does not detect the skill after restart, copy or link the same
+`skills/zuoshi-kaopu` folder there.
 
 ## How Each Action Works
 
@@ -124,7 +128,7 @@ and how thorough each step is.
 | NotebookLM MCP | Yes | Evidence engine for verify and source loading |
 | Second LLM | No | Strengthens brainstorm. Falls back to self-critique |
 | curl + textutil | Yes (macOS) | Source capture Layer 1. Built-in, zero setup |
-| Playwright | No | Source capture Layer 2. For JS-rendered sites |
+| Playwright or browser tool | No | Source capture Layer 2. For JS-rendered sites |
 
 NotebookLM is free with a Google account:
 ```bash

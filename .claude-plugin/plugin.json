@@ -1,5 +1,5 @@
 {
   "name": "zuoshi-kaopu",
-  "description": "Research methodology that combines LLM hypothesis generation with NotebookLM evidence verification. Every conclusion is traceable through a Claim Ledger.",
-  "version": "1.0.0"
+  "description": "Three evidence workflows: gather sources, challenge assumptions, and verify claims with NotebookLM.",
+  "version": "4.0.0"
 }

@@ -38,11 +38,14 @@ cd ~/zuoshi-kaopu && claude plugin add .
 
 ```bash
 git clone https://github.com/Kewanvk/zuoshi-kaopu.git ~/zuoshi-kaopu
-mkdir -p ~/.codex/skills
-cp -r ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.codex/skills/zuoshi-kaopu
+mkdir -p ~/.agents/skills
+ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
 ```
 
-输入 `/zuoshi-kaopu` 完成首次配置。
+重启 Codex 后，输入 `/zuoshi-kaopu` 完成首次配置。
+
+旧版 Codex 可能使用 `~/.codex/skills`。如果重启后没有识别到这个 skill，
+把同一个 `skills/zuoshi-kaopu` 文件夹复制或链接到那里。
 
 ## 每个动作怎么工作的
 
@@ -113,7 +116,7 @@ curl / Playwright → 抓取完整原文（不经过 AI 处理）
 | NotebookLM MCP | 是 | 质证的证据引擎 + 灌源 |
 | 第二个 LLM | 否 | 加强脑暴效果。没有的话用自我对抗替代 |
 | curl + textutil | 是 (macOS) | 搜证抓取第一层。系统自带，不用装 |
-| Playwright | 否 | 搜证抓取第二层。处理 JS 渲染的站 |
+| Playwright 或浏览器工具 | 否 | 搜证抓取第二层。处理 JS 渲染的站 |
 
 NotebookLM 免费，用 Google 账号就行：
 ```bash
