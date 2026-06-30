@@ -49,7 +49,8 @@ mkdir -p ~/.agents/skills
 ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
 ```
 
-Then restart Codex and type `/zuoshi-kaopu` to run first-time setup.
+Then restart Codex and tell it `zuoshi-kaopu` or `做事靠谱` to run first-time
+setup.
 
 Older Codex setups may use `~/.codex/skills` instead of `~/.agents/skills`.
 If Codex does not detect the skill after restart, copy or link the same

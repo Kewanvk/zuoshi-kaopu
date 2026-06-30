@@ -42,7 +42,7 @@ mkdir -p ~/.agents/skills
 ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
 ```
 
-重启 Codex 后，输入 `/zuoshi-kaopu` 完成首次配置。
+重启 Codex 后，对 Codex 说 `zuoshi-kaopu` 或 `做事靠谱` 完成首次配置。
 
 旧版 Codex 可能使用 `~/.codex/skills`。如果重启后没有识别到这个 skill，
 把同一个 `skills/zuoshi-kaopu` 文件夹复制或链接到那里。

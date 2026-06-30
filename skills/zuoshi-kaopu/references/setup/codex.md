@@ -11,8 +11,11 @@ mkdir -p ~/.agents/skills
 ln -s ~/zuoshi-kaopu/skills/zuoshi-kaopu ~/.agents/skills/zuoshi-kaopu
 ```
 
-After installation, restart Codex to load the skill. To use it, tell Codex:
+After installation, restart Codex to load the skill. To run first-time setup,
+tell Codex:
 "Use the zuoshi-kaopu skill to [your research task]."
+
+You can also say `zuoshi-kaopu` or `做事靠谱`.
 
 Some older Codex setups use `~/.codex/skills`. If the skill does not appear
 after restart, copy or link the same folder there.
@@ -75,5 +78,5 @@ The skill will spawn a sub-agent with a contrarian prompt as fallback.
 Once setup is complete:
 
 1. Open Codex in your project directory
-2. Tell Codex: "Use the zuoshi-kaopu skill to [your research task]"
+2. Tell Codex: `zuoshi-kaopu` or "Use the zuoshi-kaopu skill to [your research task]"
 3. The skill will guide you through environment verification and the five-step workflow
