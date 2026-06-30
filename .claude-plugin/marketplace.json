@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "vkskill",
+  "description": "Kewan's evidence workflow plugin for Claude Code.",
+  "owner": {
+    "name": "Kewan"
+  },
+  "plugins": [
+    {
+      "name": "vkskill",
+      "description": "Three evidence workflows: gather sources, challenge assumptions, and verify claims with NotebookLM.",
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/Kewanvk/vkskill"
+    }
+  ]
+}

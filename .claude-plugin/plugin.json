@@ -1,5 +1,8 @@
 {
   "name": "vkskill",
-  "description": "Kewan's Codex skill set. First module: proof workflows for source gathering, adversarial challenge, and evidence verification.",
-  "version": "5.0.0"
+  "description": "Three evidence workflows: gather sources, challenge assumptions, and verify claims with NotebookLM.",
+  "version": "5.0.0",
+  "author": {
+    "name": "Kewan"
+  }
 }
